@@ -1,0 +1,24 @@
+.navigation {
+  background-color: #f0f0f0;
+  padding: 10px;
+}
+
+.navigation ul {
+  list-style-type: none;
+  display: flex;
+  justify-content: center;
+}
+
+.navigation li {
+  margin-right: 10px;
+}
+
+.link {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+.activeLink {
+  color: #ff0000;
+}
