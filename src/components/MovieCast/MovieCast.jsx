@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { fetchMovieCast } from "../../services/tmdb-api";
+import styles from "./MovieCast.module.css";
 
 const MovieCast = () => {
   const { movieId } = useParams();
@@ -16,21 +17,26 @@ const MovieCast = () => {
   }, [movieId]);
 
   return (
-    <div>
-      <h3>Cast</h3>
-      <ul>
+    <div className={styles.castContainer}>
+      <h3 className={styles.castTitle}>Cast</h3>
+      <ul className={styles.castList}>
         {cast.map((actor) => (
-          <li key={actor.id}>
-            {actor.profile_path ? (
-              <img
-                src={`https://image.tmdb.org/t/p/w200${actor.profile_path}`}
-                alt={actor.name}
-              />
-            ) : (
-              <img src="path/to/placeholder.jpg" alt="Placeholder" />
-            )}
-            <p>{actor.name}</p>
-            <p>Character: {actor.character}</p>
+          <li key={actor.id} className={styles.castItem}>
+            <div className={styles.profileImageWrapper}>
+              {actor.profile_path ? (
+                <img
+                  src={`https://image.tmdb.org/t/p/w200${actor.profile_path}`}
+                  alt={actor.name}
+                  className={styles.profileImage}
+                />
+              ) : (
+                <div className={styles.noPhotoPlaceholder}>No photo</div>
+              )}
+            </div>
+            <div className={styles.actorInfo}>
+              <p className={styles.actorName}>{actor.name}</p>
+              <p className={styles.character}>Character: {actor.character}</p>
+            </div>
           </li>
         ))}
       </ul>

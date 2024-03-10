@@ -1,13 +1,22 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation, Link, Route, Routes } from "react-router-dom";
+import {
+  useParams,
+  useLocation,
+  useNavigate,
+  Link,
+  Route,
+  Routes,
+} from "react-router-dom";
 import { fetchMovieDetails } from "../../services/tmdb-api";
 import MovieCast from "../../components/MovieCast/MovieCast";
 import MovieReviews from "../../components/MovieReviews/MovieReviews";
+import styles from "./MovieDetailsPage.module.css";
 
 const MovieDetailsPage = () => {
   const { movieId } = useParams();
   const [movie, setMovie] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getMovieDetails = async () => {
@@ -18,37 +27,66 @@ const MovieDetailsPage = () => {
     getMovieDetails();
   }, [movieId]);
 
+  const handleGoBack = () => {
+    navigate(location?.state?.from || "/");
+  };
+
   return (
-    <div>
-      {movie && (
-        <>
-          <h1>{movie.title}</h1>
-          <p>{movie.overview}</p>
-          <img
-            src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-            alt={movie.title}
-          />
+    <div className={styles.container}>
+      <button onClick={handleGoBack} className={styles.backButton}>
+        Go Back
+      </button>
 
-          <h2>Additional Information</h2>
-          <ul>
-            <li>
-              <Link to="cast" state={{ from: location }}>
-                Cast
-              </Link>
-            </li>
-            <li>
-              <Link to="reviews" state={{ from: location }}>
-                Reviews
-              </Link>
-            </li>
-          </ul>
+      <div>
+        {movie && (
+          <>
+            <div className={styles.movieInfo}>
+              <img
+                src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
+                alt={movie.title}
+                className={styles.poster}
+              />
+              <div className={styles.info}>
+                <h1 className={styles.title}>
+                  {movie.title} ({new Date(movie.release_date).getFullYear()})
+                </h1>
+                <p className={styles.score}>
+                  User Score: {movie.vote_average.toFixed(1)}
+                </p>
+                <h2 className={styles.overviewTitle}>Overview</h2>
+                <p className={styles.overview}>{movie.overview}</p>
+                <h3 className={styles.genresTitle}>Genres</h3>
+                <ul className={styles.genres}>
+                  {movie.genres.map((genre) => (
+                    <li key={genre.id}>{genre.name}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
 
-          <Routes>
-            <Route path="cast" element={<MovieCast />} />
-            <Route path="reviews" element={<MovieReviews />} />
-          </Routes>
-        </>
-      )}
+            <div className={styles.additionalInfo}>
+              <h2>Additional Information</h2>
+              <ul>
+                <li>
+                  <Link to="cast" state={{ from: location.state?.from }}>
+                    Cast
+                  </Link>
+                </li>
+                <li>
+                  <Link to="reviews" state={{ from: location.state?.from }}>
+                    Reviews
+                  </Link>
+                </li>
+              </ul>
+
+              <Routes>
+                <Route path="cast" element={<MovieCast />} />
+                <Route path="reviews" element={<MovieReviews />} />
+              </Routes>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };
