@@ -1,19 +1,45 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import MovieList from "../../components/MovieList/MovieList";
 import { searchMovies } from "../../services/tmdb-api";
 import styles from "./MoviesPage.module.css";
 
 const MoviesPage = () => {
-  const [query, setQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
   const [movies, setMovies] = useState([]);
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
+  const query = searchParams.get("query") || "";
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const searchResults = await searchMovies(query);
+        setMovies(searchResults);
+      } catch (error) {
+        setError(error.message);
+      }
+
+      setIsLoading(false);
+    };
+
+    if (query) {
+      fetchMovies();
+    } else {
+      setMovies([]);
+    }
+  }, [query]);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const searchResults = await searchMovies(query);
-    setMovies(searchResults);
-    navigate(`/movies?query=${query}`);
+    const form = e.target;
+    const query = form.elements.query.value;
+    setSearchParams({ query });
+    form.reset();
   };
 
   return (
@@ -22,16 +48,20 @@ const MoviesPage = () => {
       <form onSubmit={handleSubmit} className={styles.form}>
         <input
           type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Enter movie title"
+          name="query"
+          defaultValue={query}
+          placeholder="Enter movie name"
           className={styles.input}
         />
         <button type="submit" className={styles.button}>
           Search
         </button>
       </form>
-      <MovieList movies={movies} />
+
+      {isLoading && <p>Loading...</p>}
+      {error && <p>Error: {error}</p>}
+
+      {!isLoading && !error && <MovieList movies={movies} />}
     </div>
   );
 };

@@ -1,15 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   useParams,
   useLocation,
   useNavigate,
-  Link,
-  Route,
-  Routes,
+  NavLink,
+  Outlet,
 } from "react-router-dom";
 import { fetchMovieDetails } from "../../services/tmdb-api";
-import MovieCast from "../../components/MovieCast/MovieCast";
-import MovieReviews from "../../components/MovieReviews/MovieReviews";
 import styles from "./MovieDetailsPage.module.css";
 
 const MovieDetailsPage = () => {
@@ -17,6 +14,7 @@ const MovieDetailsPage = () => {
   const [movie, setMovie] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const backLinkRef = useRef(location.state?.from ?? "/movies");
 
   useEffect(() => {
     const getMovieDetails = async () => {
@@ -28,24 +26,30 @@ const MovieDetailsPage = () => {
   }, [movieId]);
 
   const handleGoBack = () => {
-    navigate(location?.state?.from || "/");
+    navigate(backLinkRef.current);
   };
 
   return (
     <div className={styles.container}>
       <button onClick={handleGoBack} className={styles.backButton}>
-        Go Back
+        ⇽ Go Back
       </button>
 
       <div>
         {movie && (
           <>
             <div className={styles.movieInfo}>
-              <img
-                src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
-                alt={movie.title}
-                className={styles.poster}
-              />
+              <div className={styles.posterWrapper}>
+                {movie.poster_path ? (
+                  <img
+                    src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
+                    alt={movie.title}
+                    className={styles.poster}
+                  />
+                ) : (
+                  <div className={styles.noPosterPlaceholder}>No poster</div>
+                )}
+              </div>
               <div className={styles.info}>
                 <h1 className={styles.title}>
                   {movie.title} ({new Date(movie.release_date).getFullYear()})
@@ -66,23 +70,30 @@ const MovieDetailsPage = () => {
 
             <div className={styles.additionalInfo}>
               <h2>Additional Information</h2>
-              <ul>
-                <li>
-                  <Link to="cast" state={{ from: location.state?.from }}>
-                    Cast
-                  </Link>
-                </li>
-                <li>
-                  <Link to="reviews" state={{ from: location.state?.from }}>
-                    Reviews
-                  </Link>
-                </li>
-              </ul>
+              <div className={styles.buttonContainer}>
+                <NavLink
+                  to="cast"
+                  className={({ isActive }) =>
+                    isActive
+                      ? `${styles.button} ${styles.activeButton}`
+                      : styles.button
+                  }
+                >
+                  Cast
+                </NavLink>
+                <NavLink
+                  to="reviews"
+                  className={({ isActive }) =>
+                    isActive
+                      ? `${styles.button} ${styles.activeButton}`
+                      : styles.button
+                  }
+                >
+                  Reviews
+                </NavLink>
+              </div>
 
-              <Routes>
-                <Route path="cast" element={<MovieCast />} />
-                <Route path="reviews" element={<MovieReviews />} />
-              </Routes>
+              <Outlet />
             </div>
           </>
         )}
